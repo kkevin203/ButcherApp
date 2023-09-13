@@ -1,13 +1,17 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Services;
+using ButcherApp.Services;
+using Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
+//builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddSingleton<AnimalService>();
+
+//builder.Services.AddDbContext<ButcherDatabase>();
 
 var app = builder.Build();
 

@@ -1,0 +1,41 @@
+﻿@page "/animals"
+@inject AnimalService animalService;
+
+<h3>Animals</h3>
+@if (animals == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Price (€)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in animals)
+            {
+                <tr>
+                    <td>@forecast.Name</td>
+                    <td>@forecast.Price</td>
+                    <td>@forecast.Description</td>
+                   
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<Database.Entities.Animal> animals = new();
+    protected override Task OnInitializedAsync()
+    {
+        animals = animalService.GetAll();
+
+        return base.OnInitializedAsync();
+    }
+}
