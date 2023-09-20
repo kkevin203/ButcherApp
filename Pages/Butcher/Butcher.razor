@@ -1,7 +1,41 @@
 ﻿@page "/butcher"
+@inject ButcherService butcherService
 
 <h3>Butcher</h3>
+@if (butchers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in butchers)
+            {
+                <tr>
+                    <td>@forecast.Id</td>
+                    <td>@forecast.Name</td>
+                    <td>@forecast.Email</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
+    List<Database.Entities.Butcher> butchers = new();
+    protected override Task OnInitializedAsync()
+    {
+        butchers = butcherService.GetAll();
 
+        return base.OnInitializedAsync();
+    }
 }

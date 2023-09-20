@@ -1,7 +1,41 @@
 ﻿@page "/farmer"
+@inject FarmerService farmerService ;
 
 <h3>Farmer</h3>
+@if (farmers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in farmers)
+            {
+                <tr>
+                    <td>@forecast.Id</td>
+                    <td>@forecast.Name</td>
+                    <td>@forecast.Email</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
+    List<Database.Entities.Farmer> farmers = new();
+    protected override Task OnInitializedAsync()
+    {
+        farmers = farmerService.GetAll();
 
+        return base.OnInitializedAsync();
+    }
 }

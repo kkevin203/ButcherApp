@@ -8,12 +8,13 @@
 }
 else
 {
+
     <table class="table">
         <thead>
             <tr>
                 <th>Name</th>
                 <th>Price (€)</th>
-                <th>Summary</th>
+                <th>Description</th>
             </tr>
         </thead>
         <tbody>
@@ -34,7 +35,7 @@ else
     List<Database.Entities.Animal> animals = new();
     protected override Task OnInitializedAsync()
     {
-        animals = animalService.GetAll();
+        animals = animalService.GetAnimals();
 
         return base.OnInitializedAsync();
     }

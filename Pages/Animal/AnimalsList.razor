@@ -1,0 +1,116 @@
+﻿@page "/addanimal"
+@using Database.Entities
+
+
+
+<h4>Liste des Animaux</h4>
+<ul>
+    @foreach (var animal in animaux)
+    {
+        <li>@animal.Name
+            <button @onclick="() => UpdateAnimal(animal)">Modifier</button>
+            <button @onclick="() => DeleteAnimal(animal.Id)">Supprimer</button>
+        </li>
+    }
+</ul>
+
+<!-- Formulaire pour ajouter/modifier un animal -->
+<h4>@(animalEnEdition.Id == 0 ? "Ajouter un Animal" : "Modifier Animal")</h4>
+<form @onsubmit="ValiderAnimal">
+    <div class="form-group">
+        <input class="form-control" @bind="animalEnEdition.Name" placeholder="Nom de l'animal" />
+    </div>
+    <div class="form-group">
+        <input class="form-control" @bind="animalEnEdition.Race" placeholder="Race de l'animal" />
+    </div>
+    <div class="form-group">
+        <input class="form-control" @bind="animalEnEdition.ProduteurId" placeholder="Eleveur de l'animal" />
+    </div>
+    <button type="submit" class="btn btn-primary">@((animalEnEdition.Id == 0 ? "Ajouter" : "Modifier"))</button>
+</form>
+
+@code {
+    private List<Animal> animaux = new List<Animal>();
+    private Animal animalEnEdition = new Animal();
+
+    [Inject]
+    private AnimalService animalService { get; set; }
+
+    protected override void OnInitialized()
+    {
+        animalEnEdition = new Animal();
+
+        try
+        {
+            // Charger la liste des animaux au démarrage
+            SwitchAnimaux();
+        }
+        catch (Exception ex)
+        {
+            // Gérer l'exception ici (affichage d'un message d'erreur, journalisation, etc.)
+            Console.WriteLine("Erreur lors du chargement des animaux : " + ex.Message);
+        }
+    }
+
+    private void SwitchAnimaux()
+    {
+        try
+        {
+            animaux = animalService.GetAnimals();
+        }
+        catch (Exception ex)
+        {
+            // Gérer l'exception ici (affichage d'un message d'erreur, journalisation, etc.)
+            Console.WriteLine("Erreur lors du chargement des animaux : " + ex.Message);
+        }
+    }
+
+    private void UpdateAnimal(Animal animal) =>
+        // Pré-remplir le formulaire avec les détails de l'animal à modifier
+        animalEnEdition = new Animal
+            {
+                Id = animal.Id,
+                Name = animal.Name,
+                Race = animal.Race,
+                ProduteurId = animal.ProduteurId
+                
+            };
+    private void ValiderAnimal()
+    {
+        if (animalEnEdition == null)
+        {
+            // Gérer le cas où animalEnEdition est null
+            return;
+        }
+
+        if (animalEnEdition.Id == 0)
+        {
+            // Ajouter un nouvel animal
+            animalService.AddAnimal(animalEnEdition);
+        }
+        else
+        {
+            // Modifier l'animal existant
+            animalService.UpdateAnimal(animalEnEdition);
+        }
+
+        // Réinitialiser l'animal en cours d'édition
+        animalEnEdition = new Animal(); // Réinitialisation à null si nécessaire
+
+        // Recharger la liste des animaux
+        SwitchAnimaux();
+
+    }
+
+    private void DeleteAnimal(int animalId)
+    {
+        // Supprimer l'animal
+        animalService.DeleteAnimal(animalId);
+
+        // Réinitialiser l'animal en cours d'édition
+        animalEnEdition = new Animal(); // Réinitialisation à null si nécessaire
+
+        // Recharger la liste des animaux
+        SwitchAnimaux();
+    }
+}
