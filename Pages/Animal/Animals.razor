@@ -8,27 +8,42 @@
 }
 else
 {
-
+@* 
     <table class="table">
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Price (€)</th>
-                <th>Description</th>
+                <th>Race</th>
+                <th>Producteur</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody> *@
+    <div class="container-fluid" col-md-2>
+        <div class="row">
             @foreach (var forecast in animals)
             {
-                <tr>
+            @*     <tr>
                     <td>@forecast.Name</td>
-                    <td>@forecast.Price</td>
-                    <td>@forecast.Description</td>
+                    <td>@forecast.Race</td>
+                    <td>@forecast.ProduteurName</td>
                    
-                </tr>
+                </tr> *@
+
+                <div class="card" style="width: 18rem;">
+                    <img src="./img/le-boeuf-1.jpg" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">@forecast.Name</h5>
+                        <p class="card-text">@forecast.Race</p>
+                        <p class="card-text">@forecast.ProduteurName</p>
+                        <a href="#" class="btn btn-primary">en voir plus </a>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+
+            </div>
+            </div>
+    @*     </tbody>
+    </table> *@
 }
 
 @code {
