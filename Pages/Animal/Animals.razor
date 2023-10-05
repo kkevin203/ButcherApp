@@ -1,42 +1,56 @@
 ﻿@page "/animals"
+
 @inject AnimalService animalService;
+@inject IJSRuntime JSRuntime
+
 
 <h3>Animals</h3>
+
 @if (animals == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Price (€)</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in animals)
+    <div class="container-fluid">
+        <div class="row">
+            @foreach (var animal in animals)
             {
-                <tr>
-                    <td>@forecast.Name</td>
-                    <td>@forecast.Price</td>
-                    <td>@forecast.Description</td>
-                   
-                </tr>
+                <div class="card" style="width: 18rem; margin: 10px;">
+                    <img src="@($"uploads/{animal.PhotoPath}")" alt="Animal Image" />
+                    <div class="card-body">
+                        <h5 class="card-title">@animal.Name</h5>
+                        <p class="card-text">@animal.Race</p>
+                        <p class="card-text">@animal.FarmerName</p>
+                        <a href="/DescriptionAnimal/@animal.Id" class="btn btn-primary">en voir plus</a>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    </div>
 }
 
 @code {
-    List<Database.Entities.Animal> animals = new();
-    protected override Task OnInitializedAsync()
-    {
-        animals = animalService.GetAnimals();
+    private List<Database.Entities.Animal> animals = new();
 
-        return base.OnInitializedAsync();
+    private IJSRuntime jsRuntime { get; set; }
+
+    private async Task changerImage(int animalId)
+    {
+        var imageUrl = await JSRuntime.InvokeAsync<string>("getImageUrlInputValue", $"image-url-{animalId}");
+        if (!string.IsNullOrEmpty(imageUrl))
+        {
+            
+            await jsRuntime.InvokeVoidAsync("changerImage", animalId, imageUrl);
+            
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        animals = await animalService.GetAnimalsAsync();
+
+        await JSRuntime.InvokeVoidAsync("console.log", "Hello from Blazor!");
+
     }
 }

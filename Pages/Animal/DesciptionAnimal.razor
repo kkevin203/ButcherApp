@@ -1,0 +1,44 @@
+﻿@page "/DescriptionAnimal/{animalId}"
+
+@using ButcherApp.Pages.Animal
+@using Database.Entities;
+@inject AnimalService animalService; 
+@inject NavigationManager navigationManager;
+
+<h3>Description de l'Animal</h3>
+@if (animal != null)
+{
+    <div>
+        <h4>Nom : @animal.Name</h4>
+        <p>Race : @animal.Race</p>
+        <p>Categorisation : @animal.Categorisation</p>
+        <p>Éleveur : @animal.FarmerName</p>
+        <img src="@($"uploads/{animal.PhotoPath}")" alt="Animal Image" />
+        <p>description : @animal.Description</p>
+        <p> Stabu : @animal.Stabu</p>
+    </div>
+}
+else
+{
+    <p>Animal non trouvé. <a href="javascript:void(0);" @onclick="ReturnToPreviousPage">Retour</a></p>
+}
+
+@code {
+    private Animal animal;
+
+    [Parameter]
+    public string animalId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(animalId, out int parsedAnimalId))
+        {
+            animal = await animalService.GetAnimalByIdAsync(parsedAnimalId);
+        }
+    }
+
+    private void ReturnToPreviousPage()
+    {
+        navigationManager.NavigateTo("/animals");
+    }
+}
