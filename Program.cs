@@ -24,7 +24,7 @@ builder.Services.AddDbContext<ButcherDatabase>(options =>
 //builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<AnimalService>();
 builder.Services.AddScoped<ButcherService>();
-builder.Services.AddSingleton<FarmerService>();
+builder.Services.AddScoped<FarmerService>();
 
 //builder.Services.AddDbContext<ButcherDatabase>();
 
@@ -64,14 +64,14 @@ void CreateDbIfNotExists(IApplicationBuilder app)
         try
         {
             var context = services.GetRequiredService<ButcherDatabase>();
-            //context.Database.EnsureDeleted();
+            context.Database.EnsureDeleted();
             context.Database.OpenConnection();
             context.Database.EnsureCreated();
         }
         catch (Exception ex)
         {
             var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "Une erreur s'est produite lors de la cr�ation de la base de donn�es.");
+            logger.LogError(ex, "Une erreur s'est produite lors de la création de la base de données.");
         }
     }
 }

@@ -1,202 +1,169 @@
 ﻿@page "/addanimal"
-@using Database.Entities
-@using Microsoft.AspNetCore.Components
+@using Database.Entities;
+@using Microsoft.AspNetCore.Components;
+@inject AnimalService animalService
 
-
-
-@if(FarmerIsConnected == true){
-<h4>gérer les Animaux</h4>
-<ul>
-    @foreach (var animal in animaux)
-    {
-        <li>@animal.Name
-            <button class="btn btn-outline-secondary" @onclick="() => UpdateAnimal(animal)">Modifier</button>
-            <button class="btn btn-outline-danger" @onclick="() => DeleteAnimal(animal.Id)">Supprimer</button>
-        </li>
-    }
-</ul>
-
-<!-- Formulaire pour ajouter/modifier un animal -->
-<h4>@(animalEnEdition.Id == 0 ? "Ajouter un Animal" : "Modifier Animal")</h4>
-<form @onsubmit="ValiderAnimal">
-    <div class="form-group">
-        <input class="form-control" @bind="animalEnEdition.Name" placeholder="Nom de l'animal" />
-        @if (isNameInvalid)
+@if (FarmerIsConnected)
+{
+    <h4>Gérer les Animaux</h4>
+    <ul>
+        @foreach (var animal in animaux)
         {
-            <div class="text-danger">Le nom de l'animal est requis.</div>
+            <li>
+                @animal.Name
+                <button class="btn btn-outline-secondary" @onclick="() => UpdateAnimal(animal)">Modifier</button>
+                <button class="btn btn-outline-danger" @onclick="() => DeleteAnimal(animal.Id)">Supprimer</button>
+            </li>
         }
-    </div>
-    <div class="form-group">
-        <input class="form-control" @bind="animalEnEdition.Race" placeholder="Race de l'animal" />
-        @if (isRaceInvalid)
-        {
-            <div class="text-danger">La race de l'animal est requise.</div>
-        }
-    </div>
-    <div class="form-group">
-        <input class="form-control" @bind="animalEnEdition.ProduteurName" placeholder="Eleveur de l'animal" />
-        @if (isProduteurNameInvalid)
-        {
-            <div class="text-danger">Le nom de l'éleveur est requis.</div>
-        }
-    </div>  
-    <div class="form-group">
-            <label for="photo">Importer une photo :</label>
-            <InputFile id="photo" @bind-value="animalEnEdition.PhotoPath" OnChange="(async e=> HandleFileChange(e))"></InputFile>
+    </ul>
+
+    <!-- Formulaire pour ajouter/modifier un animal -->
+    <h4>@(animalEnEdition.Id == 0 ? "Ajouter un Animal" : "Modifier Animal")</h4>
+    <form @onsubmit="ValiderAnimal">
+        <div class="form-group">
+            <input class="form-control" @bind="animalEnEdition.Name" placeholder="Nom de l'animal" />
+            @if (isNameInvalid)
+            {
+                <div class="text-danger">Le nom de l'animal est requis.</div>
+            }
+        </div>
+        <div class="form-group">
+            <input class="form-control" @bind="animalEnEdition.Race" placeholder="Race de l'animal" />
+            @if (isRaceInvalid)
+            {
+                <div class="text-danger">La race de l'animal est requise.</div>
+            }
+        </div>
+        <div class="form-group">
+            <input class="form-control" @bind="animalEnEdition.FarmerName" placeholder="Eleveur de l'animal" />
             @if (isProduteurNameInvalid)
-        {
-            <div class="text-danger">La photo de l'animal est requis.</div>
-        }
-    </div>
+            {
+                <div class="text-danger">Le nom de l'éleveur est requis.</div>
+            }
+        </div>
+        <div class="form-group">
+            <label for="photo">Importer une photo :</label>
+            <InputFile id="photo" OnChange="(async e=> await HandleFileChange(e))"></InputFile>
+            @if (isPhotoInvalid)
+            {
+                <div class="text-danger">La photo de l'animal est requise.</div>
+            }
+        </div>
+        <div class="form-group">
+            @if (!string.IsNullOrEmpty(animalEnEdition.PhotoPath))
+            {
+                <img src="uploads/@animalEnEdition.PhotoPath" alt="Animal Image" />
+            }
+        </div>
+        <button type="submit" class="btn btn-primary">@((animalEnEdition.Id == 0 ? "Ajouter" : "Modifier"))</button>
+    </form>
+}
+else
+{
+    <h4><b>Vous devez vous connecter pour avoir accès à cette page.</b></h4>
+}
 
-    <button type="submit" class="btn btn-primary">@((animalEnEdition.Id == 0 ? "Ajouter" : "Modifier"))</button>
-</form>
-
-    @code {
-
+@code {
     private List<Animal> animaux = new List<Animal>();
     private Animal animalEnEdition = new Animal();
     private bool isNameInvalid = false;
     private bool isRaceInvalid = false;
     private bool isProduteurNameInvalid = false;
-    public bool FarmerIsConnected = true;
+    private bool isPhotoInvalid = false;
+    private bool FarmerIsConnected = true;
 
 
-    [Inject]
-    private AnimalService animalService { get; set; }
-
-    protected override void OnInitialized()
+    private async Task SwitchAnimaux()
     {
-        animalEnEdition = new Animal();
-
         try
         {
-            // Charger la liste des animaux au démarrage
-            SwitchAnimaux();
+            animaux = await animalService.GetAnimalsAsync();
         }
         catch (Exception ex)
         {
-            // Gérer l'exception ici (affichage d'un message d'erreur, journalisation, etc.)
             Console.WriteLine("Erreur lors du chargement des animaux : " + ex.Message);
         }
     }
 
-    private void SwitchAnimaux()
+    protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            animaux = animalService.GetAnimals();
-        }
-        catch (Exception ex)
-        {
-            // Gérer l'exception ici (affichage d'un message d'erreur, journalisation, etc.)
-            Console.WriteLine("Erreur lors du chargement des animaux : " + ex.Message);
-        }
+        animalEnEdition = new Animal();
+        await SwitchAnimaux();
     }
 
     private void UpdateAnimal(Animal animal) =>
-        // Pré-remplir le formulaire avec les détails de l'animal à modifier
         animalEnEdition = new Animal
             {
                 Id = animal.Id,
                 Name = animal.Name,
                 Race = animal.Race,
-                ProduteurName = animal.ProduteurName
-
+                Categorisation = animal.Categorisation,
+                FarmerName = animal.FarmerName,
+                PhotoPath = animal.PhotoPath,
+                Description = animal.Description,
+                Stabu = animal.Stabu
             };
-    private void ValiderAnimal()
+
+    private async Task ValiderAnimal()
     {
-        // Réinitialisez les variables booléennes d'erreur
-        isNameInvalid = false;
-        isRaceInvalid = false;
-        isProduteurNameInvalid = false;
+        isNameInvalid = string.IsNullOrWhiteSpace(animalEnEdition.Name);
+        isRaceInvalid = string.IsNullOrWhiteSpace(animalEnEdition.Race);
+        isProduteurNameInvalid = string.IsNullOrWhiteSpace(animalEnEdition.FarmerName);
 
-        if (string.IsNullOrWhiteSpace(animalEnEdition.Name))
-        {
-            isNameInvalid = true;
-        }
-
-        if (string.IsNullOrWhiteSpace(animalEnEdition.Race))
-        {
-            isRaceInvalid = true;
-        }
-
-        if (animalEnEdition.ProduteurName == null)
-        {
-            isProduteurNameInvalid = true;
-        }
-
-        // Vérifiez s'il y a des erreurs
         if (isNameInvalid || isRaceInvalid || isProduteurNameInvalid)
         {
-            // Si des erreurs sont présentes, ne continuez pas le traitement
             return;
         }
 
-        // Le formulaire est valide, continuez avec l'ajout ou la modification de l'animal
         if (animalEnEdition.Id == 0)
         {
-            // Ajouter un nouvel animal
             animalService.AddAnimal(animalEnEdition);
         }
         else
         {
-            // Modifier l'animal existant
             animalService.UpdateAnimal(animalEnEdition);
         }
 
-        // Réinitialiser l'animal en cours d'édition
         animalEnEdition = new Animal();
-
-        // Réinitialiser les variables booléennes d'erreur
         isNameInvalid = false;
         isRaceInvalid = false;
         isProduteurNameInvalid = false;
 
-        // Recharger la liste des animaux
-        SwitchAnimaux();
+        await SwitchAnimaux();
     }
 
 
-    private void DeleteAnimal(int animalId)
+    private async Task DeleteAnimal(int animalId)
     {
-        // Supprimer l'animal
         animalService.DeleteAnimal(animalId);
-
-        // Réinitialiser l'animal en cours d'édition
-        animalEnEdition = new Animal(); // Réinitialisation à null si nécessaire
-
-        // Recharger la liste des animaux
-        SwitchAnimaux();
+        animalEnEdition = new Animal();
+        await SwitchAnimaux();
     }
-    private void HandleFileChange(InputFileChangeEventArgs e)
+
+    private List<IBrowserFile> loadedFiles = new();
+    private async Task HandleFileChange(InputFileChangeEventArgs e)
     {
         var selectedFile = e.File;
 
         if (selectedFile != null)
         {
-            // Générez un nom de fichier unique ou utilisez l'ID de l'animal
-            // pour stocker l'image dans un répertoire spécifique.
             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(selectedFile.Name)}";
-
-            // Stockez le chemin du fichier dans la propriété PhotoPath de l'animal en cours d'édition.
-            animalEnEdition.PhotoPath = fileName;
-
-            // Enregistrez le fichier sur le serveur dans le répertoire souhaité.
             var filePath = Path.Combine("wwwroot/uploads", fileName);
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                selectedFile.OpenReadStream().CopyTo(fileStream);
-            }
 
+            try
+            {
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await selectedFile.OpenReadStream().CopyToAsync(fileStream);
+                }
+                animalEnEdition.PhotoPath = fileName;
+                isPhotoInvalid = string.IsNullOrEmpty(animalEnEdition.PhotoPath);
+
+
+            }catch {
+                isPhotoInvalid = true;
+            }
+            StateHasChanged();
         }
     }
-
 }
-
-}
-else
-{
-    <h4><b>Vous devez vous connecter pour avoir accès a cette page . </b></h4>
-}
-
